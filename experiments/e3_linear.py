@@ -1,17 +1,3 @@
-"""E3: the 4x4 test system for delta = 10^-n, n = 1..16.
-
-Solvers: matrix inverse, naive Gaussian elimination, partial pivoting,
-Gauss-Seidel (relaxation 1 and 0.9); then the two elimination solvers with
-every intermediate rounded to k decimals. Errors are against the exact
-solution of the float system.
-
-Writes ``results/e3_linear/``: ``solvers.csv``, ``rounding.csv``,
-``tables.md`` and ``errors.png``.
-"""
-
-from __future__ import annotations
-
-import csv
 import os
 
 import matplotlib
@@ -19,7 +5,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from common import md_table, out_dir, s4, vfull, write_tables
+from common import md_table, out_dir, s4, vfull, write_csv, write_tables
 from numerical_methods.errors import true_relative_error
 from numerical_methods.linear_solvers import (
     build_system, exact_solution, gauss_naive, gauss_pivoting, gauss_seidel,
@@ -32,16 +18,8 @@ RELAX = 0.9
 
 
 def max_error(x_exact, x):
-    """Largest component true relative error (%); nan if any is nan."""
     e = true_relative_error(x_exact, x)
     return float(np.nan) if np.any(np.isnan(e)) else float(np.max(e))
-
-
-def write_csv(path, rows):
-    with open(path, "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0]))
-        w.writeheader()
-        w.writerows(rows)
 
 
 def main():
@@ -112,7 +90,7 @@ def main():
 
     write_tables(os.path.join(out, "tables.md"), [
         ("E3-a solutions at δ = 0.1 (n = 1)", t_sol),
-        ("E3-b largest component true relative error ε_t (%) against the "
+        ("E3-b largest component true percent relative error ε_t (%) against the "
          "exact solution", t_err),
         ("E3-c Gauss-Seidel: spectral radius ρ of the iteration matrix and "
          "stopping (tolerance 1%, at most 1000 sweeps)", t_gs),

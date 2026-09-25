@@ -1,12 +1,3 @@
-"""Bracketing and open root-finding methods.
-
-Each method runs a fixed number of iterations and returns one record per
-iterate: ``{"iteration", "x", "approx_error", "true_error"}`` with errors in
-percent (``approx_error`` is None for the first record).
-"""
-
-from __future__ import annotations
-
 from .errors import approx_error, true_relative_error
 
 
@@ -17,9 +8,6 @@ def _record(i, x, previous, root):
 
 
 def bisection(f, lower, upper, root, iterations):
-    """Bisection on ``[lower, upper]``. Records the midpoints of iterations
-    1..``iterations``. Keeps the half whose endpoints change sign; if
-    ``f(lower) * f(mid) > 0`` the root is in ``[mid, upper]``."""
     out, previous = [], None
     for i in range(1, iterations + 1):
         mid = (lower + upper) / 2
@@ -32,21 +20,18 @@ def bisection(f, lower, upper, root, iterations):
     return out
 
 
-def fixed_point(g, x0, root, iterations):
-    """Fixed-point iteration ``x_{i+1} = g(x_i)``. Records ``x_0`` to
-    ``x_{iterations-1}`` (iteration 0 is the starting value)."""
+def _iterate(step, x0, root, iterations):
     out, x, previous = [], x0, None
     for i in range(iterations):
         out.append(_record(i, x, previous, root))
-        previous, x = x, g(x)
+        if i < iterations - 1:
+            previous, x = x, step(x)
     return out
+
+
+def fixed_point(g, x0, root, iterations):
+    return _iterate(g, x0, root, iterations)
 
 
 def newton_raphson(f, df, x0, root, iterations):
-    """Newton-Raphson ``x_{i+1} = x_i - f(x_i) / f'(x_i)``. Records ``x_0`` to
-    ``x_{iterations-1}`` (iteration 0 is the starting value)."""
-    out, x, previous = [], x0, None
-    for i in range(iterations):
-        out.append(_record(i, x, previous, root))
-        previous, x = x, x - f(x) / df(x)
-    return out
+    return _iterate(lambda x: x - f(x) / df(x), x0, root, iterations)

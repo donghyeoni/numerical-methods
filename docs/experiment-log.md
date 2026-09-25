@@ -7,8 +7,9 @@ its numbers appear here. The four experiments are independent of each other.
 ## Conventions
 
 - **Errors** are in percent (Chapra & Canale):
-  - true relative error `ε_t = |(true − approx) / true| · 100`;
-  - approximate error `ε_a = |(present − previous) / present| · 100`, not
+  - true percent relative error `ε_t = |(true − approx) / true| · 100`;
+  - approximate percent relative error
+    `ε_a = |(present − previous) / present| · 100`, not
     defined for the first estimate (shown as `–`).
 - **Precision.** Errors and other measured values are shown with 4
   significant digits (`format(x, "#.4g")`, for example `0.9643`, `14.94`,
@@ -190,7 +191,7 @@ records with `ε_t = 0` (Newton-Raphson from iteration 7) are not drawn.
 | Gauss-Seidel | nan | nan | nan | nan |
 | Gauss-Seidel, relaxation 0.9 | nan | nan | nan | nan |
 
-**E3-b largest component true relative error ε_t (%) against the exact solution** (`results/e3_linear/tables.md`)
+**E3-b largest component true percent relative error ε_t (%) against the exact solution** (`results/e3_linear/tables.md`)
 
 | n (δ = 10⁻ⁿ) | cond₂(A) | inverse | naive | pivoting | Gauss-Seidel | Gauss-Seidel, relaxation 0.9 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -287,8 +288,8 @@ the normal equations:
 - linear `a0 + a1·x`; polynomial of order 2;
 - exponential `a0·exp(a1·x + a2·x²)`, fitted on `ln y` (points with `y = 0`
   left out);
-- power `a0·(x + 10)^a1`, fitted on `log10` (the shift makes `x + 10 > 0`;
-  points with `y = 0` left out);
+- power `a0·(x + 10)^a1`, fitted on `log10` (points with `y = 0` or
+  `x + 10 ≤ 0` left out; no drawn point has `x + 10 ≤ 0`);
 - sigmoid `1 / (1 + exp(a0 + a1·x))`, fitted on `ln(1/y − 1)` (only
   `0 < y < 1`).
 
@@ -340,6 +341,13 @@ Figures: `results/e4_regression/fits_seed0.png` (the five fits at seed 0) and
    `ε_t(i) / ε_t(i−1)` and the Newton-Raphson table the column
    `0.045·ε_t(i−1)²`, so that the convergence checks in the observations are
    read from the tables. The iterates did not change.
+4. **Code cleanup.** After the E1–E4 runs above, the code was tidied: the
+   last, unrecorded update of fixed-point iteration and Newton-Raphson is no
+   longer computed; the power fit also leaves out points with `x + 10 ≤ 0`;
+   seeds where every fit fails would no longer count toward "highest R²"; the
+   CSV writing moved to one helper. The E2 figure's y label and the E3-b title
+   now say "true percent relative error". A rerun gave the same values in
+   every CSV and table.
 
 **Differences between the plan and the runs** (the plan above is kept as
 written):
@@ -349,7 +357,9 @@ written):
   `x_0` and 14 iterations (`x_1`–`x_14`), as in the original scripts.
 - E3: the rounding study covers naive elimination and partial pivoting only,
   at `n` = 1, 2, 4 and 8. The matrix inverse (`numpy.linalg.inv`) is a library
-  routine whose intermediate values cannot be rounded.
+  routine whose intermediate values cannot be rounded. Not every intermediate
+  value is rounded: only the multipliers, the updated matrix entries and the
+  back-substitution results (see the E3 setting).
 
 ## Environment
 

@@ -1,12 +1,3 @@
-"""E1: Taylor polynomials of sin(x) about pi/6.
-
-Writes ``results/e1_taylor/``: ``orders.csv``, ``tables.md`` and
-``polynomials.png``.
-"""
-
-from __future__ import annotations
-
-import csv
 import os
 
 import matplotlib
@@ -14,7 +5,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from common import md_table, out_dir, s4, vfull, write_tables
+from common import md_table, out_dir, s4, vfull, write_csv, write_tables
 from numerical_methods.errors import approx_error, true_relative_error
 from numerical_methods.taylor import sin_taylor
 
@@ -33,10 +24,7 @@ def main():
                      "true_error": float(true_relative_error(true, p)),
                      "approx_error": approx_error(p, previous)})
         previous = p
-    with open(os.path.join(out, "orders.csv"), "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0]))
-        w.writeheader()
-        w.writerows(rows)
+    write_csv(os.path.join(out, "orders.csv"), rows)
 
     t = md_table(["order n", "P_n(x)", "ε_t (%)", "ε_a (%)"],
                  [[r["order"], vfull(r["value"]), s4(r["true_error"]),

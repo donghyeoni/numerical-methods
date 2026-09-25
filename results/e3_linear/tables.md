@@ -9,7 +9,7 @@
 | Gauss-Seidel | nan | nan | nan | nan |
 | Gauss-Seidel, relaxation 0.9 | nan | nan | nan | nan |
 
-### E3-b largest component true relative error ε_t (%) against the exact solution
+### E3-b largest component true percent relative error ε_t (%) against the exact solution
 
 | n (δ = 10⁻ⁿ) | cond₂(A) | inverse | naive | pivoting | Gauss-Seidel | Gauss-Seidel, relaxation 0.9 |
 | --- | --- | --- | --- | --- | --- | --- |

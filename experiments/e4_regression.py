@@ -1,16 +1,3 @@
-"""E4: regression of the empirical CDF of normal samples, over 100 seeds.
-
-For each seed (0-99): ``numpy.random.seed(seed)``, draw 100 samples from
-N(0, 4^2), then 15 points x ~ U[-10, 10), y = empirical CDF(x); fit five
-models and compute R^2 on the 15 points.
-
-Writes ``results/e4_regression/``: ``r2.csv``, ``tables.md``,
-``fits_seed0.png`` and ``r2.png``.
-"""
-
-from __future__ import annotations
-
-import csv
 import os
 
 import matplotlib
@@ -18,7 +5,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from common import md_table, out_dir, s4, write_tables
+from common import md_table, out_dir, s4, write_csv, write_tables
 from numerical_methods import regression as rg
 
 SEEDS = tuple(range(100))
@@ -65,14 +52,13 @@ def main():
             a = fits[name]
             row[name] = float("nan") if a is None else rg.r_squared(y, ev(a, x))
         rows.append(row)
-    with open(os.path.join(out, "r2.csv"), "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0]))
-        w.writeheader()
-        w.writerows(rows)
+    write_csv(os.path.join(out, "r2.csv"), rows)
 
     names = list(MODELS)
     R = np.array([[r[m] for m in names] for r in rows])
-    best = np.argmax(np.where(np.isnan(R), -np.inf, R), axis=1)
+    valid = ~np.all(np.isnan(R), axis=1)
+    best = np.full(len(R), -1)
+    best[valid] = np.nanargmax(R[valid], axis=1)
     t_seed0 = md_table(["model", "R²"],
                        [[m, s4(rows[0][m])] for m in names])
     t_sum = md_table(

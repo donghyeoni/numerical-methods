@@ -1,10 +1,3 @@
-"""Run the four experiments and regenerate ``results/``.
-
-    python experiments/run_all.py
-"""
-
-from __future__ import annotations
-
 import e1_taylor
 import e2_roots
 import e3_linear
