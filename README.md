@@ -22,46 +22,63 @@ Taylor 급수, 근 찾기, 선형 연립방정식, 회귀를 NumPy로 구현하�
 
 ### E1: Taylor 급수
 
-<div align="center">
+<table>
+<tr>
+<td>
 
-| 차수 n | 0 | 1 | 2 | 3 | 4 | 5 | 6–10 |
-| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 상대오차 (%) | 0.8574 | 0.001243 | 3.575e-06 | 2.586e-09 | 4.469e-12 | 2.201e-14 | 0 |
+| 차수 n | 상대오차 (%) |
+| ---: | ---: |
+| 0 | 0.8574 |
+| 1 | 0.001243 |
+| 2 | 3.575e-06 |
+| 3 | 2.586e-09 |
+| 4 | 4.469e-12 |
+| 5 | 2.201e-14 |
+| 6–10 | 0 |
 
-<img src="results/e1_taylor/polynomials.png" alt="그림 1" width="640">
-
-</div>
+</td>
+<td><img src="results/e1_taylor/polynomials.png" alt="그림 1" width="360"></td>
+</tr>
+</table>
 
 ### E2: 근 찾기
 
-<div align="center">
+<table>
+<tr>
+<td>
 
-| 방법 | 15번째 기록의 상대오차 (%) |
+| 방법 | 15번째 기록의<br>상대오차 (%) |
 | :--- | ---: |
 | 이분법 | 0.0005086 |
 | 고정점 반복 | 3.134 |
-| Newton-Raphson | 0 (iteration 7부터 `x = 3.0`) |
+| Newton-Raphson | 0 |
 
-<img src="results/e2_roots/errors.png" alt="그림 2" width="640">
+Newton-Raphson은 iteration 7부터 `x = 3.0`이다.
 
-</div>
+</td>
+<td><img src="results/e2_roots/errors.png" alt="그림 2" width="360"></td>
+</tr>
+</table>
 
 ### E3: 선형 연립방정식
 
-<div align="center">
+<table>
+<tr>
+<td>
 
-*네 성분 중 가장 큰 상대오차 (%). Gauss-Seidel은 이완 1과 0.9 모두 같은 결과다.*
-
-| n (δ = 10⁻ⁿ) | 조건수 | 단순 가우스 소거 | partial pivoting | Gauss-Seidel |
+| n (δ = 10⁻ⁿ) | 조건수 | 단순 가우스<br>소거 | partial<br>pivoting | Gauss-<br>Seidel |
 | ---: | ---: | ---: | ---: | ---: |
 | 1 | 14.94 | 4.049e-14 | 3.522e-14 | nan |
 | 8 | 13.42 | 1.488e-06 | 2.220e-14 | nan |
 | 15 | 13.42 | 11.18 | 2.220e-14 | nan |
 | 16 | 13.42 | nan | 3.331e-14 | nan |
 
-<img src="results/e3_linear/errors.png" alt="그림 3" width="640">
+네 성분 중 가장 큰 상대오차 (%).<br>Gauss-Seidel은 이완 1과 0.9 모두 같은 결과다.
 
-</div>
+</td>
+<td><img src="results/e3_linear/errors.png" alt="그림 3" width="480"></td>
+</tr>
+</table>
 
 - 조건수는 모든 `n`에서 13.42–14.94이지만, pivoting 없는 소거의 오차는 `n = 15`에서 11.18%까지
   커진다. pivoting을 쓰면 모든 `n`에서 8.218e-14% 이하다.
@@ -70,9 +87,11 @@ Taylor 급수, 근 찾기, 선형 연립방정식, 회귀를 NumPy로 구현하�
 
 ### E4: 분포 회귀
 
-<div align="center">
+<table>
+<tr>
+<td>
 
-| 모델 | `R²` 평균 | `R²`가 가장 높은 seed 수 |
+| 모델 | `R²` 평균 | 최고 `R²`<br>seed 수 |
 | :--- | ---: | ---: |
 | 선형 | 0.9643 | 0 / 100 |
 | 2차 다항식 | 0.9724 | 6 / 100 |
@@ -80,8 +99,9 @@ Taylor 급수, 근 찾기, 선형 연립방정식, 회귀를 NumPy로 구현하�
 | 거듭제곱 | 0.8609 | 0 / 100 |
 | **sigmoid** | **0.9934** | **79 / 100** |
 
-<img src="results/e4_regression/r2.png" alt="그림 4" width="640">
-
-</div>
+</td>
+<td><img src="results/e4_regression/r2.png" alt="그림 4" width="480"></td>
+</tr>
+</table>
 
 - seed 0에서는 지수 모델의 `R²`가 가장 높지만, seed 100개에서는 sigmoid가 79개에서 가장 높다.
