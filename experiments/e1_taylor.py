@@ -47,7 +47,8 @@ def main():
     fig.tight_layout()
     fig.savefig(os.path.join(out, "polynomials.png"), dpi=150)
     plt.close(fig)
-    print(open(os.path.join(out, "tables.md"), encoding="utf-8").read())
+    with open(os.path.join(out, "tables.md"), encoding="utf-8") as fh:
+        print(fh.read())
 
 
 if __name__ == "__main__":
