@@ -37,7 +37,7 @@ Taylor 급수, 근 찾기, 선형 연립방정식, 회귀를 NumPy로 구현하�
 | 6–10 | 0 |
 
 </td>
-<td><img src="results/e1_taylor/polynomials.png" alt="그림 1" width="360"></td>
+<td><img src="results/e1_taylor/polynomials.png" alt="그림 1" width="480"></td>
 </tr>
 </table>
 
@@ -56,29 +56,26 @@ Taylor 급수, 근 찾기, 선형 연립방정식, 회귀를 NumPy로 구현하�
 Newton-Raphson은 iteration 7부터 `x = 3.0`이다.
 
 </td>
-<td><img src="results/e2_roots/errors.png" alt="그림 2" width="360"></td>
+<td><img src="results/e2_roots/errors.png" alt="그림 2" width="480"></td>
 </tr>
 </table>
 
 ### E3: 선형 연립방정식
 
-<table>
-<tr>
-<td>
+<div align="center">
 
-| n (δ = 10⁻ⁿ) | 조건수 | 단순 가우스<br>소거 | partial<br>pivoting | Gauss-<br>Seidel |
+*네 성분 중 가장 큰 상대오차 (%). Gauss-Seidel은 이완 1과 0.9 모두 같은 결과다.*
+
+| n (δ = 10⁻ⁿ) | 조건수 | 단순 가우스 소거 | partial pivoting | Gauss-Seidel |
 | ---: | ---: | ---: | ---: | ---: |
 | 1 | 14.94 | 4.049e-14 | 3.522e-14 | nan |
 | 8 | 13.42 | 1.488e-06 | 2.220e-14 | nan |
 | 15 | 13.42 | 11.18 | 2.220e-14 | nan |
 | 16 | 13.42 | nan | 3.331e-14 | nan |
 
-네 성분 중 가장 큰 상대오차 (%).<br>Gauss-Seidel은 이완 1과 0.9 모두 같은 결과다.
+<img src="results/e3_linear/errors.png" alt="그림 3" width="640">
 
-</td>
-<td><img src="results/e3_linear/errors.png" alt="그림 3" width="480"></td>
-</tr>
-</table>
+</div>
 
 - 조건수는 모든 `n`에서 13.42–14.94이지만, pivoting 없는 소거의 오차는 `n = 15`에서 11.18%까지
   커진다. pivoting을 쓰면 모든 `n`에서 8.218e-14% 이하다.
