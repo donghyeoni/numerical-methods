@@ -37,7 +37,7 @@ Taylor 급수, 근 찾기, 선형 연립방정식, 회귀를 NumPy로 구현하�
 | 6–10 | 0 |
 
 </td>
-<td><img src="results/e1_taylor/polynomials.png" alt="그림 1" width="480"></td>
+<td><img src="results/e1_taylor/polynomials.png" alt="그림 1" width="640"></td>
 </tr>
 </table>
 
@@ -97,7 +97,7 @@ Newton-Raphson은 iteration 7부터 `x = 3.0`이다.
 | **sigmoid** | **0.9934** | **79 / 100** |
 
 </td>
-<td><img src="results/e4_regression/r2.png" alt="그림 4" width="480"></td>
+<td><img src="results/e4_regression/r2.png" alt="그림 4" width="552"></td>
 </tr>
 </table>
 
