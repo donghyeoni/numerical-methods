@@ -148,7 +148,7 @@ records with `ε_t = 0` (Newton-Raphson from iteration 7) are not drawn.
 - **Bisection:** `ε_t` halves at every iteration, from 8.333% to 0.0005086%
   at iteration 15.
 - **Fixed-point iteration:** `ε_t` is still 3.134% at `x_14`. The ratio of
-  successive `ε_t` falls from 0.9318 to 0.8473 over the 15 records; the
+  successive `ε_t` falls from 0.9318 to 0.8473 over iterations 1–14; the
   linear rate at the root is `g′(3) = 9/11 = 0.8182`.
 - **Newton-Raphson:** `x = 3.0` exactly from iteration 7. At iterations 5 and
   6, `ε_t` (4.118e-05% and 7.629e-11%) matches the quadratic estimate
@@ -171,9 +171,10 @@ records with `ε_t = 0` (Newton-Raphson from iteration 7) are not drawn.
   newest values and relaxed right after its update,
   `x_i ← w·x_i + (1 − w)·x_i,old` (`w = 1` and `w = 0.9`), stopping when the
   largest `ε_a` of a sweep is below 1% or after 1000 sweeps.
-- **Rounding:** every computed intermediate value of the elimination solvers
-  (multipliers, updated matrix entries, back-substitution results) is rounded
-  to `k` decimals with `numpy.round`; the input system is not rounded.
+- **Rounding:** in the elimination solvers, the multipliers, the updated
+  matrix entries and the back-substitution results are rounded to `k`
+  decimals with `numpy.round`; the products and inner sums between them and
+  the input system are not rounded.
 - `ρ` is the spectral radius of the Gauss-Seidel iteration matrix
   `(D + wL)⁻¹((1 − w)D − wU)`; the iteration converges from every start if and
   only if `ρ < 1`.

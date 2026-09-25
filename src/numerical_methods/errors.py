@@ -6,7 +6,7 @@ import numpy as np
 
 
 def true_relative_error(true_value, approx_value):
-    """True fractional relative error in percent,
+    """True percent relative error,
     ``|(true - approx) / true| * 100``. Works on scalars and arrays."""
     return np.abs((true_value - approx_value) / true_value) * 100
 

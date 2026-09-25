@@ -1,10 +1,10 @@
 """Direct and iterative solvers for the 4x4 test system ``A x = b``.
 
 ``round_digits`` of the elimination solvers simulates arithmetic with ``k``
-decimal places: every computed intermediate value (elimination multipliers,
-updated matrix entries, back-substitution results) is rounded to ``k``
-decimals with ``numpy.round``. The input system itself is not rounded. ``None`` means
-full float64 arithmetic.
+decimal places: the elimination multipliers, the updated matrix entries and
+the back-substitution results are rounded to ``k`` decimals with
+``numpy.round``. The products and inner sums between them and the input
+system are not rounded. ``None`` means full float64 arithmetic.
 """
 
 from __future__ import annotations

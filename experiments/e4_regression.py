@@ -96,6 +96,8 @@ def main():
     fig, ax = plt.subplots(figsize=(5.8, 3.8))
     ax.scatter(x, y, color="k", s=16, zorder=3, label="empirical CDF points")
     for (name, (_, ev)), c in zip(MODELS.items(), colors):
+        if fits[name] is None:
+            continue
         ax.plot(grid, ev(fits[name], grid), color=c, lw=1.3, label=name)
     ax.set_ylim(-0.3, 1.3)
     ax.set_xlabel("x")
