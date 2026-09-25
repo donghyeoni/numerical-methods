@@ -12,16 +12,23 @@ appears in the tables below.
   - approximate percent relative error
     `ε_a = |(present − previous) / present| · 100`, not defined for the
     first estimate or when the present estimate is 0 (shown as `–`).
-- **Precision.** Errors and other measured values are shown with 4
+- **Precision.** Counts (iterations, sweeps, seeds, failed fits) are shown as
+  integers. Errors and other measured values are shown with 4
   significant digits (`format(x, "#.4g")`, for example `0.9643`, `14.94`,
-  `3.575e-06`). Approximate values (polynomial values, iterates, solution
+  `1100.` (the trailing point marks the 4 digits), `3.575e-06`). Approximate values (polynomial values, iterates, solution
   components) are shown in full float64 precision (the shortest decimal that
-  converts back to the same float). `0` means exactly zero in float64;
-  `nan` means the computation gave NaN.
+  converts back to the same float); so is the reference value `numpy.sin(x)`
+  (the true value for `ε_t` in E1) in the E1-a title. Constants derived in the
+  text are shown with 4 significant digits after `≈`. A measured value of `0` is exactly zero
+  in float64; `nan` means the computation gave NaN. `–` marks a value that is
+  not defined: `ε_a` as above; in the two added E2 columns, a row without a
+  previous record or a ratio whose divisor is 0; in E4-a, a failed fit; in
+  E4-b, the statistics of a model with no successful fit. In a min–max cell,
+  ` – ` separates the minimum and the maximum.
 - **Arithmetic.** float64 (NumPy) unless a section says otherwise.
-- **Result tables.** Every result table (titled with its id and file) is
-  written by the script named in its section to a `tables.md` file and
-  copied here unchanged.
+- **Result tables.** Every result table is written by the script named in
+  its section to a `tables.md` file; its rows are copied here unchanged, under
+  a bold title with the table id and the file.
 
 ## Plan (written before any run)
 
@@ -152,10 +159,11 @@ records with `ε_t = 0` (Newton-Raphson from iteration 7) are not drawn.
   at iteration 15.
 - **Fixed-point iteration:** `ε_t` is still 3.134% at `x_14`. The ratio of
   successive `ε_t` falls from 0.9318 to 0.8473 over iterations 1–14; the
-  linear rate at the root is `g′(3) = 9/11 = 0.8182`.
+  linear rate at the root is `g′(3) = 9/11 ≈ 0.8182`.
 - **Newton-Raphson:** `x = 3.0` exactly from iteration 7. At iterations 5 and
-  6, `ε_t` (4.118e-05% and 7.629e-11%) matches the quadratic estimate
-  `0.045·ε_t(i−1)²` (4.126e-05% and 7.630e-11%). Here
+  6, `ε_t` (4.118e-05% and 7.629e-11%) agrees to 2 and 3 significant digits
+  with the quadratic estimate `0.045·ε_t(i−1)²` (4.126e-05% and 7.630e-11%),
+  respectively. Here
   `0.045 = f″(3) / (2 f′(3)) · 3 / 100` converts the absolute-error rate
   `f″(3) / (2 f′(3)) = 1.5` to percent of the root.
 
@@ -172,14 +180,19 @@ records with `ε_t = 0` (Newton-Raphson from iteration 7) are not drawn.
 - **Solvers:** `numpy.linalg.inv(A) @ b`; naive Gaussian elimination; partial
   (row) pivoting; Gauss-Seidel from `x = 0`, each component updated with the
   newest values and relaxed right after its update,
-  `x_i ← w·x_i + (1 − w)·x_i,old` (`w = 1` and `w = 0.9`), stopping when the
-  largest `ε_a` of a sweep is below 1% or after 1000 sweeps.
+  `x_i ← w·x_i,GS + (1 − w)·x_i,old`, where `x_i,GS` is the Gauss-Seidel
+  value of the component (`w = 1` and `w = 0.9`), stopping when the
+  largest `ε_a` of a sweep is below 1% (components equal to 0, whose `ε_a` is
+  not defined, are skipped) or after 1000 sweeps.
 - **Rounding:** in the elimination solvers, the multipliers, the updated
-  matrix entries and the back-substitution results are rounded to `k`
-  decimals with `numpy.round`; the products and inner sums between them and
+  entries of the augmented matrix `[A | b]` and the back-substitution results
+  are rounded to `k` decimals with `numpy.round` (the value times `10^k` is
+  rounded to the nearest integer, halves to even, then divided by `10^k`); the products and inner sums between them and
   the input system are not rounded.
+- `cond₂(A)` is the 2-norm condition number (`numpy.linalg.cond`).
 - `ρ` is the spectral radius of the Gauss-Seidel iteration matrix
-  `(D + wL)⁻¹((1 − w)D − wU)`; the iteration converges from every start if and
+  `(D + wL)⁻¹((1 − w)D − wU)`, with `A = D + L + U` (`D` diagonal, `L` and `U`
+  the strictly lower and upper parts of `A`); the iteration converges from every start if and
   only if `ρ < 1`.
 
 **E3-a solutions at δ = 0.1 (n = 1)** (`results/e3_linear/tables.md`)
@@ -259,19 +272,20 @@ records with `ε_t = 0` (Newton-Raphson from iteration 7) are not drawn.
 
 Figure `results/e3_linear/errors.png`: left, E3-b for the inverse, naive and
 pivoting solvers; right, E3-d and E3-e at `n = 1` and `n = 4`. Log scales;
-values of exactly 0 or nan are not drawn.
+values of exactly 0 or nan are left as gaps in the lines.
 
 **Observations.**
 
 - `cond₂(A)` stays between 13.42 and 14.94 for all `n`.
 - The inverse and pivoting solvers have `ε_t` of at most 8.218e-14% for every
   `n`.
-- Naive elimination divides by the pivot `δ`. Its `ε_t` grows from 4.049e-14%
+- Naive elimination divides by the first pivot `δ`. Its `ε_t` grows from 4.049e-14%
   at `n = 1` to 11.18% at `n = 15`, not monotonically (0.0008799% at `n = 10`,
   8.273e-06% at `n = 11`), and is nan at `n = 16`.
 - Gauss-Seidel: `ρ` is at least 1.091e+05 (`w = 1`) and 6.830e+04
-  (`w = 0.9`) for all `n`. Every run used all 1000 sweeps and ended with nan
-  components.
+  (`w = 0.9`) for all `n`. Every run used all 1000 sweeps (E3-c) and ended with at
+  least one nan component: its `ε_t` is nan for every `n` (E3-b), and
+  `gs_finite` and `relax_finite` in `solvers.csv` are False.
 - With rounding, the pivoting error falls as `k` grows at each tested `δ`
   (`n` = 1, 2, 4, 8), from
   10.00–11.09% at `k = 1` to 8.072e-07–2.380e-06% at `k = 8`. Naive
@@ -290,12 +304,19 @@ the normal equations:
 - exponential `a0·exp(a1·x + a2·x²)`, fitted on `ln y` (points with `y = 0`
   left out);
 - power `a0·(x + 10)^a1`, fitted on `log10` (points with `y = 0` or
-  `x + 10 ≤ 0` left out; no drawn point has `x + 10 ≤ 0`);
+  `x + 10 ≤ 0` left out of the fit; no drawn point has `x + 10 ≤ 0`);
 - sigmoid `1 / (1 + exp(a0 + a1·x))`, fitted on `ln(1/y − 1)` (only
   `0 < y < 1`).
 
-`R² = (S_t − S_r) / S_t` on all 15 points. "Highest R²" counts the seeds where
-a model has the largest `R²` of the five.
+`R² = (S_t − S_r) / S_t` on all 15 points, with `S_t = Σ(y − ȳ)²` and
+`S_r = Σ(y − ŷ)²`, `ŷ` being the model value in the original `y` scale (`R²` is nan when
+`S_t = 0`). "Highest R²" counts the seeds where
+a model has the largest `R²` of the five; a seed where no model has a
+non-nan `R²` is not counted. A fit that raises
+`numpy.linalg.LinAlgError` (also raised when fewer points remain than the
+model has coefficients) counts as failed: it is shown as `–` in E4-a, left
+blank in `r2.csv`, counted under "failed fits" and left out of the
+statistics and figures.
 
 **E4-a R² at seed 0** (`results/e4_regression/tables.md`)
 
@@ -331,29 +352,25 @@ Figures: `results/e4_regression/fits_seed0.png` (the five fits at seed 0) and
 
 ## Changes made after a run
 
+Changes to the code that did not change any CSV, table or figure are not
+listed.
+
 1. **Number format.** After the first runs of E1 and E4, measured values
    changed from scientific notation with 4 significant digits (`3.575e-06`,
    `9.643e-01`) to `format(x, "#.4g")`, and approximate values from 10
-   significant digits to full float64 precision, because 10 digits showed
-   different `P_n(x)` as equal. The computed values did not change.
-2. **E3 figure.** After the first run, the x axis of the left panel got
-   integer ticks. The data did not change.
-3. **E2 tables.** After the first run, the fixed-point table got the column
+   significant digits to full float64 precision. The computed values did not
+   change.
+2. **E2 tables.** After the first run, the fixed-point table got the column
    `ε_t(i) / ε_t(i−1)` and the Newton-Raphson table the column
-   `0.045·ε_t(i−1)²`, so that the convergence checks in the observations are
-   read from the tables. The iterates did not change.
-4. **Code cleanup.** After the E1–E4 runs above, the code was tidied: the
-   last, unrecorded update of fixed-point iteration and Newton-Raphson is no
-   longer computed; the power fit also leaves out points with `x + 10 ≤ 0`;
-   seeds where every fit fails would no longer count toward "highest R²"; the
-   CSV writing moved to one helper. The E2 figure's y label and the E3-b title
-   now say "true percent relative error". A rerun gave the same values in
-   every CSV and table.
-5. **Script output.** After the E1–E4 runs above, the scripts stopped
-   printing their tables to the console, so that a run with redirected output
-   does not fail on characters outside the console encoding; CSV files are
-   written as UTF-8; `ε_a` and the E2 ratio column are `–` when their divisor
-   is 0 (it is not 0 in any run). A rerun gave byte-identical results.
+   `0.045·ε_t(i−1)²`. The iterates did not change.
+3. **Labels and drawing.** After the first runs, these labels and plot
+   details changed; the computed values did not change:
+   - E2 figure: y label "true percent relative error ε_t (%)"; legend names
+     fixed-point iteration and Newton-Raphson.
+   - E3-b title: "true percent relative error".
+   - E3 figure: integer x ticks in the left panel; y label
+     "largest ε_t (%)" in the right panel; values of 0 or nan drawn as gaps.
+   - E4 `r2.png`: x label "model" and the full model names.
 
 **Differences between the plan and the runs** (the plan above is kept as
 written):
@@ -364,11 +381,35 @@ written):
 - E3: the rounding study covers naive elimination and partial pivoting only,
   at `n` = 1, 2, 4 and 8. The matrix inverse (`numpy.linalg.inv`) is a library
   routine whose intermediate values cannot be rounded. Not every intermediate
-  value is rounded: only the multipliers, the updated matrix entries and the
-  back-substitution results (see the E3 setting).
+  value is rounded: only the multipliers, the updated entries of `[A | b]`
+  and the back-substitution results (see the E3 setting).
+- E3: the error against the exact solution is reported as the largest of the
+  four component `ε_t`, which the plan does not specify.
+- E3: "the exact solution" is the exact rational solution of the float64
+  system (`δ` is the float64 value of `10.0**-n`), converted to float64.
+- All: each experiment also writes its per-run values to CSV files in its
+  `results/` folder, which the plan does not list.
+- E2: the runs report the iterates, `ε_a` and `ε_t` of each record, the
+  columns `ε_t(i) / ε_t(i−1)` (fixed-point
+  iteration) and `0.045·ε_t(i−1)²` (Newton-Raphson) and the figure
+  `errors.png`, which the plan does not list.
+- E3: the runs also report the solution components at `n = 1` (E3-a),
+  `cond₂(A)`, the spectral radius `ρ`, the Gauss-Seidel stopping (start
+  `x = 0`, tolerance 1%, at most 1000 sweeps) and the figure `errors.png`,
+  which the plan does not list.
+- E4: the runs also report `R²` at seed 0 alone (E4-a and `fits_seed0.png`),
+  the mean ± SD, median and min–max of `R²`, the number of seeds at which each
+  model has the highest `R²`, the number of failed fits and the figure
+  `r2.png`, which the plan does not list.
+- E4: "15 uniform points" means 15 points drawn at random from the uniform
+  distribution, `x ~ U[−10, 10)`, not an evenly spaced grid.
 
 ## Environment
 
-Python 3.12.10, NumPy 2.5.3, matplotlib 3.11.2, Windows 11, CPU only. With
-the package installed (`pip install -e .`), `python experiments/run_all.py`
+Python 3.12.10, NumPy 2.5.3 (OpenBLAS, scipy-openblas 0.3.34.106.0),
+matplotlib 3.11.2, Windows 11, CPU with AVX2. `numpy.linalg` results depend
+on the BLAS build and the CPU, and NumPy's element-wise functions (`sin`,
+`exp`, `log`) can differ in the last bit between CPUs. With
+the package installed (`pip install -e ".[experiments]"`),
+`python experiments/run_all.py`
 runs E1–E4 in order and rewrites `results/`.

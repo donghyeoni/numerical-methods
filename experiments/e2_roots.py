@@ -3,6 +3,7 @@ import os
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 
 from common import md_table, out_dir, s4, vfull, write_csv, write_tables
 from numerical_methods.roots import bisection, fixed_point, newton_raphson
@@ -44,7 +45,8 @@ def main():
         headers = ["iteration", "x", "ε_a (%)", "ε_t (%)"]
         cells = [[h["iteration"], vfull(h["x"]), s4(h["approx_error"]),
                   s4(h["true_error"])] for h in hist]
-        prev = [None] + [h["true_error"] for h in hist[:-1]]
+        if key != "bisection":
+            prev = [None] + [h["true_error"] for h in hist[:-1]]
         if key == "fixed-point":
             headers.append("ε_t(i) / ε_t(i−1)")
             for c, h, p in zip(cells, hist, prev):
@@ -58,11 +60,14 @@ def main():
     write_tables(os.path.join(out, "tables.md"), sections)
 
     fig, ax = plt.subplots(figsize=(5.5, 3.6))
-    for key, color in (("bisection", "#4C78A8"), ("fixed-point", "#F58518"),
-                       ("newton", "#54A24B")):
-        pts = [(h["iteration"], h["true_error"]) for h in curves[key]
-               if h["true_error"] > 0]
-        ax.plot(*zip(*pts), marker="o", ms=3, color=color, label=key)
+    for key, label, color in (
+            ("bisection", "bisection", "#4C78A8"),
+            ("fixed-point", "fixed-point iteration", "#F58518"),
+            ("newton", "Newton-Raphson", "#54A24B")):
+        its = [h["iteration"] for h in curves[key]]
+        errs = [h["true_error"] if h["true_error"] > 0 else np.nan
+                for h in curves[key]]
+        ax.plot(its, errs, marker="o", ms=3, color=color, label=label)
     ax.set_yscale("log")
     ax.set_xlabel("iteration")
     ax.set_ylabel("true percent relative error ε_t (%)")

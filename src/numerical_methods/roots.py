@@ -12,6 +12,8 @@ def bisection(f, lower, upper, root, iterations):
     for i in range(1, iterations + 1):
         mid = (lower + upper) / 2
         out.append(_record(i, mid, previous, root))
+        if i == iterations:
+            break
         if f(lower) * f(mid) > 0:
             lower = mid
         else:

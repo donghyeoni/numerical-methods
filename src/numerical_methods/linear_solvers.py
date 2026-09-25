@@ -14,14 +14,14 @@ def build_system(delta):
 
 def exact_solution(A, b):
     n = len(b)
-    M = [[Fraction(float(v)) for v in row] + [Fraction(float(b[i]))]
+    M = [[Fraction(v) for v in row] + [Fraction(b[i])]
          for i, row in enumerate(A)]
-    for i in range(n):
+    for i in range(n - 1):
         p = max(range(i, n), key=lambda r: abs(M[r][i]))
         M[i], M[p] = M[p], M[i]
         for j in range(i + 1, n):
             m = M[j][i] / M[i][i]
-            M[j] = [a - m * c for a, c in zip(M[j], M[i])]
+            M[j][i + 1:] = [a - m * c for a, c in zip(M[j][i + 1:], M[i][i + 1:])]
     x = [Fraction(0)] * n
     for i in range(n - 1, -1, -1):
         s = sum(M[i][j] * x[j] for j in range(i + 1, n))
@@ -33,17 +33,17 @@ def _r(v, k):
     return v if k is None else np.round(v, k)
 
 
-@np.errstate(divide="ignore", invalid="ignore", over="ignore")
+@np.errstate(divide="ignore", invalid="ignore")
 def _eliminate(A, b, pivoting, k):
     n = len(b)
-    M = np.hstack([A, b[:, None]]).astype(float)
+    M = np.hstack([A, b[:, None]])
     for i in range(n - 1):
         if pivoting:
             p = i + int(np.argmax(np.abs(M[i:, i])))
             M[[i, p]] = M[[p, i]]
         for j in range(i + 1, n):
             m = _r(M[j, i] / M[i, i], k)
-            M[j, i:] = _r(M[j, i:] - m * M[i, i:], k)
+            M[j, i + 1:] = _r(M[j, i + 1:] - m * M[i, i + 1:], k)
     x = np.zeros(n)
     for i in range(n - 1, -1, -1):
         x[i] = _r((M[i, n] - M[i, i + 1:n] @ x[i + 1:]) / M[i, i], k)
@@ -58,25 +58,26 @@ def gauss_pivoting(A, b, round_digits=None):
     return _eliminate(A, b, True, round_digits)
 
 
-@np.errstate(divide="ignore", invalid="ignore", over="ignore")
-def gauss_seidel(A, b, *, relaxation=1.0, tol=1.0, max_iter=1000):
+@np.errstate(invalid="ignore", over="ignore")
+def gauss_seidel(A, b, relaxation, tol, max_iter):
     n = len(b)
     C = A / np.diag(A)[:, None]
-    np.fill_diagonal(C, 0.0)
     d = b / np.diag(A)
     x = np.zeros(n)
     for sweep in range(1, max_iter + 1):
-        err = np.zeros(n)
+        err = []
         for i in range(n):
             old = x[i]
-            x[i] = relaxation * (d[i] - C[i] @ x) + (1 - relaxation) * old
-            err[i] = abs((x[i] - old) / x[i]) * 100
-        if np.max(err) < tol:
+            gs = d[i] - C[i, :i] @ x[:i] - C[i, i + 1:] @ x[i + 1:]
+            x[i] = relaxation * gs + (1 - relaxation) * old
+            if x[i] != 0:
+                err.append(abs((x[i] - old) / x[i]) * 100)
+        if err and np.max(err) < tol:
             return x, sweep, True
     return x, max_iter, False
 
 
-def iteration_spectral_radius(A, relaxation=1.0):
+def iteration_spectral_radius(A, relaxation):
     D = np.diag(np.diag(A))
     lower = D + relaxation * np.tril(A, -1)
     rhs = (1 - relaxation) * D - relaxation * np.triu(A, 1)

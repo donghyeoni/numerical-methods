@@ -2,11 +2,12 @@ import numpy as np
 
 
 def empirical_cdf(sample, x):
-    sample = np.asarray(sample)
     return np.count_nonzero(sample <= x) / len(sample)
 
 
 def _lstsq(Z, t):
+    if Z.shape[0] < Z.shape[1]:
+        raise np.linalg.LinAlgError("fewer points than coefficients")
     return np.linalg.solve(Z.T @ Z, Z.T @ t)
 
 
@@ -23,7 +24,7 @@ def fit_polynomial(x, y, order):
 
 
 def eval_polynomial(a, x):
-    return _powers(np.atleast_1d(x), len(a) - 1) @ a
+    return _powers(x, len(a) - 1) @ a
 
 
 def fit_exponential(x, y, order):
@@ -34,7 +35,6 @@ def fit_exponential(x, y, order):
 
 
 def eval_exponential(a, x):
-    x = np.atleast_1d(x)
     return a[0] * np.exp(_powers(x, len(a) - 1)[:, 1:] @ a[1:])
 
 
@@ -46,7 +46,7 @@ def fit_power(x, y):
 
 
 def eval_power(a, x):
-    return a[0] * np.asarray(x, dtype=float) ** a[1]
+    return a[0] * x ** a[1]
 
 
 def fit_sigmoid(x, y):
@@ -55,11 +55,12 @@ def fit_sigmoid(x, y):
 
 
 def eval_sigmoid(a, x):
-    return 1 / (1 + np.exp(a[0] + a[1] * np.asarray(x, dtype=float)))
+    return 1 / (1 + np.exp(a[0] + a[1] * x))
 
 
 def r_squared(y, y_fit):
-    y = np.asarray(y, dtype=float)
     s_t = np.sum((y - y.mean()) ** 2)
-    s_r = np.sum((y - np.asarray(y_fit, dtype=float)) ** 2)
+    if s_t == 0:
+        return float("nan")
+    s_r = np.sum((y - y_fit) ** 2)
     return float((s_t - s_r) / s_t)

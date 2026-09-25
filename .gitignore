@@ -2,12 +2,14 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+build/
+dist/
 .venv/
 venv/
 
 # Stray plot outputs; the committed results/ artifacts are kept
 *.png
-!results/**
+!results/**/*.png
 
 # OS
 .DS_Store

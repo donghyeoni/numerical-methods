@@ -43,7 +43,7 @@ def fit_all(x, y):
 
 def main():
     out = out_dir("e4_regression")
-    rows = []
+    rows, failed = [], []
     for seed in SEEDS:
         x, y = dataset(seed)
         fits = fit_all(x, y)
@@ -52,23 +52,32 @@ def main():
             a = fits[name]
             row[name] = float("nan") if a is None else rg.r_squared(y, ev(a, x))
         rows.append(row)
-    write_csv(os.path.join(out, "r2.csv"), rows)
+        failed.append([fits[name] is None for name in MODELS])
+    write_csv(os.path.join(out, "r2.csv"),
+              [{**r, **{m: "" for m, f in zip(MODELS, fl) if f}}
+               for r, fl in zip(rows, failed)])
 
     names = list(MODELS)
     R = np.array([[r[m] for m in names] for r in rows])
+    F = np.array(failed)
     valid = ~np.all(np.isnan(R), axis=1)
     best = np.full(len(R), -1)
     best[valid] = np.nanargmax(R[valid], axis=1)
     t_seed0 = md_table(["model", "R²"],
-                       [[m, s4(rows[0][m])] for m in names])
+                       [[m, s4(None if F[0, j] else rows[0][m])]
+                        for j, m in enumerate(names)])
+    def summary(j):
+        v = R[~F[:, j], j]
+        if len(v) == 0:
+            return ["–", "–", "–"]
+        return [f"{s4(np.mean(v))} ± {s4(np.std(v))}", s4(np.median(v)),
+                f"{s4(np.min(v))} – {s4(np.max(v))}"]
+
     t_sum = md_table(
         ["model", "R² mean ± SD", "median", "min–max", "highest R²",
          "failed fits"],
-        [[m, f"{s4(np.nanmean(R[:, j]))} ± {s4(np.nanstd(R[:, j]))}",
-          s4(np.nanmedian(R[:, j])),
-          f"{s4(np.nanmin(R[:, j]))} – {s4(np.nanmax(R[:, j]))}",
-          f"{int(np.sum(best == j))} / {len(SEEDS)}",
-          int(np.sum(np.isnan(R[:, j])))] for j, m in enumerate(names)])
+        [[m, *summary(j), f"{int(np.sum(best == j))} / {len(SEEDS)}",
+          int(np.sum(F[:, j]))] for j, m in enumerate(names)])
     write_tables(os.path.join(out, "tables.md"), [
         ("E4-a R² at seed 0", t_seed0),
         (f"E4-b R² over {len(SEEDS)} seeds (0–{SEEDS[-1]}), SD with ddof = 0",
@@ -98,14 +107,17 @@ def main():
     rng = np.random.default_rng(0)
     fig, ax = plt.subplots(figsize=(6.2, 3.6))
     for j, (name, c) in enumerate(zip(names, colors)):
-        v = R[:, j][~np.isnan(R[:, j])]
+        v = R[~F[:, j], j]
+        if len(v) == 0:
+            continue
         ax.scatter(j + rng.uniform(-0.12, 0.12, len(v)), v, s=14, color=c,
                    edgecolor="white", linewidth=0.6, zorder=3)
         med = float(np.median(v))
         ax.hlines(med, j - 0.25, j + 0.25, color="#0b0b0b", lw=2, zorder=4)
         ax.annotate(s4(med), (j + 0.27, med), va="center", fontsize=7)
     ax.set_xticks(range(len(names)))
-    ax.set_xticklabels([n.split(" (")[0] for n in names], fontsize=8)
+    ax.set_xticklabels([n.replace(" (", "\n(") for n in names], fontsize=8)
+    ax.set_xlabel("model")
     ax.set_ylabel("R²")
     ax.set_title(f"R² over {len(SEEDS)} seeds (bars: medians)", fontsize=10)
     ax.grid(True, axis="y", color="#e5e5e2", lw=0.6, zorder=0)

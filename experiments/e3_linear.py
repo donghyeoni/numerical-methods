@@ -15,30 +15,39 @@ NS = tuple(range(1, 17))
 ROUND_DIGITS = (1, 2, 3, 4, 6, 8)
 ROUND_NS = (1, 2, 4, 8)
 RELAX = 0.9
+TOL = 1.0
+MAX_SWEEPS = 1000
 
 
 def max_error(x_exact, x):
     e = true_relative_error(x_exact, x)
-    return float(np.nan) if np.any(np.isnan(e)) else float(np.max(e))
+    return float(np.max(e))
+
+
+def solve(A, b):
+    x_gs, it_gs, ok_gs = gauss_seidel(A, b, 1.0, TOL, MAX_SWEEPS)
+    x_rx, it_rx, ok_rx = gauss_seidel(A, b, RELAX, TOL, MAX_SWEEPS)
+    xs = {"exact": exact_solution(A, b), "inverse": np.linalg.inv(A) @ b,
+          "naive": gauss_naive(A, b), "pivoting": gauss_pivoting(A, b),
+          "Gauss-Seidel": x_gs, f"Gauss-Seidel, relaxation {RELAX}": x_rx}
+    return xs, (it_gs, ok_gs), (it_rx, ok_rx)
 
 
 def main():
     out = out_dir("e3_linear")
-    rows, solutions = [], {}
+    rows = []
     for n in NS:
         A, b = build_system(10.0 ** -n)
-        x_ex = exact_solution(A, b)
-        with np.errstate(all="ignore"):
-            x_inv = np.linalg.inv(A) @ b
-        x_nv = gauss_naive(A, b)
-        x_pv = gauss_pivoting(A, b)
-        x_gs, it_gs, ok_gs = gauss_seidel(A, b)
-        x_rx, it_rx, ok_rx = gauss_seidel(A, b, relaxation=RELAX)
+        xs, (it_gs, ok_gs), (it_rx, ok_rx) = solve(A, b)
+        if n == 1:
+            xs_n1 = xs
+        x_ex, x_gs = xs["exact"], xs["Gauss-Seidel"]
+        x_rx = xs[f"Gauss-Seidel, relaxation {RELAX}"]
         rows.append({
             "n": n, "cond": float(np.linalg.cond(A)),
-            "inverse": max_error(x_ex, x_inv),
-            "naive": max_error(x_ex, x_nv),
-            "pivoting": max_error(x_ex, x_pv),
+            "inverse": max_error(x_ex, xs["inverse"]),
+            "naive": max_error(x_ex, xs["naive"]),
+            "pivoting": max_error(x_ex, xs["pivoting"]),
             "gs": max_error(x_ex, x_gs), "gs_sweeps": it_gs,
             "gs_converged": ok_gs,
             "gs_finite": bool(np.all(np.isfinite(x_gs))),
@@ -48,10 +57,6 @@ def main():
             "rho_gs": iteration_spectral_radius(A, 1.0),
             "rho_relax": iteration_spectral_radius(A, RELAX),
         })
-        if n == 1:
-            solutions = {"exact": x_ex, "inverse": x_inv, "naive": x_nv,
-                         "pivoting": x_pv, "Gauss-Seidel": x_gs,
-                         f"Gauss-Seidel, relaxation {RELAX}": x_rx}
     write_csv(os.path.join(out, "solvers.csv"), rows)
 
     rrows = []
@@ -66,7 +71,8 @@ def main():
 
     t_sol = md_table(
         ["method", "x1", "x2", "x3", "x4"],
-        [[m] + [vfull(v) for v in x] for m, x in solutions.items()])
+        [[m] + [vfull(v) for v in x]
+         for m, x in xs_n1.items()])
     t_err = md_table(
         ["n (δ = 10⁻ⁿ)", "cond₂(A)", "inverse", "naive", "pivoting",
          "Gauss-Seidel", f"Gauss-Seidel, relaxation {RELAX}"],
@@ -93,7 +99,7 @@ def main():
         ("E3-b largest component true percent relative error ε_t (%) against the "
          "exact solution", t_err),
         ("E3-c Gauss-Seidel: spectral radius ρ of the iteration matrix and "
-         "stopping (tolerance 1%, at most 1000 sweeps)", t_gs),
+         f"stopping (tolerance {TOL:g}%, at most {MAX_SWEEPS} sweeps)", t_gs),
         ("E3-d naive elimination with k-decimal rounding: largest ε_t (%)",
          t_round("naive")),
         ("E3-e partial pivoting with k-decimal rounding: largest ε_t (%)",
@@ -104,8 +110,9 @@ def main():
     ax = axes[0]
     for key, color in (("inverse", "#B279A2"), ("naive", "#E45756"),
                        ("pivoting", "#4C78A8")):
-        pts = [(r["n"], r[key]) for r in rows if r[key] > 0]
-        ax.plot(*zip(*pts), marker="o", ms=3, color=color, label=key)
+        vals = [r[key] if r[key] > 0 else np.nan for r in rows]
+        ax.plot([r["n"] for r in rows], vals, marker="o", ms=3, color=color,
+                label=key)
     ax.set_yscale("log")
     ax.set_xticks(range(1, 17, 3))
     ax.set_xlabel("n (δ = 10⁻ⁿ)")
@@ -115,12 +122,14 @@ def main():
     ax = axes[1]
     for n, ls in ((1, "-"), (4, "--")):
         for key, color in (("naive", "#E45756"), ("pivoting", "#4C78A8")):
-            pts = [(r["digits"], r[key]) for r in rrows
-                   if r["n"] == n and np.isfinite(r[key]) and r[key] > 0]
-            ax.plot(*zip(*pts), ls=ls, marker="o", ms=3, color=color,
-                    label=f"{key}, n = {n}")
+            sel = [r for r in rrows if r["n"] == n]
+            vals = [r[key] if r[key] > 0 else np.nan
+                    for r in sel]
+            ax.plot([r["digits"] for r in sel], vals, ls=ls, marker="o",
+                    ms=3, color=color, label=f"{key}, n = {n}")
     ax.set_yscale("log")
     ax.set_xlabel("decimals k")
+    ax.set_ylabel("largest ε_t (%)")
     ax.set_title("k-decimal rounding", fontsize=10)
     ax.legend(fontsize=8)
     for a in axes:

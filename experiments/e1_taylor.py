@@ -17,13 +17,11 @@ def main():
     out = out_dir("e1_taylor")
     x = np.pi / 6 + DELTA
     true = np.sin(x)
-    rows, previous = [], None
-    for n in range(MAX_ORDER + 1):
-        p = sin_taylor(n, x)
-        rows.append({"order": n, "value": p,
-                     "true_error": float(true_relative_error(true, p)),
-                     "approx_error": approx_error(p, previous)})
-        previous = p
+    values = [sin_taylor(n, x) for n in range(MAX_ORDER + 1)]
+    rows = [{"order": n, "value": p,
+             "true_error": float(true_relative_error(true, p)),
+             "approx_error": approx_error(p, prev)}
+            for n, (p, prev) in enumerate(zip(values, [None] + values[:-1]))]
     write_csv(os.path.join(out, "orders.csv"), rows)
 
     t = md_table(["order n", "P_n(x)", "ε_t (%)", "ε_a (%)"],

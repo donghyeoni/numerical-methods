@@ -1,5 +1,4 @@
 import csv
-import math
 import os
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -15,11 +14,8 @@ def out_dir(name):
 def s4(x):
     if x is None:
         return "–"
-    x = float(x)
     if x == 0:
         return "0"
-    if not math.isfinite(x):
-        return str(x)
     return format(x, "#.4g")
 
 
@@ -35,13 +31,13 @@ def md_table(headers, rows):
 
 
 def write_tables(path, sections):
-    with open(path, "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
         for title, table in sections:
             f.write(f"### {title}\n\n{table}\n\n")
 
 
 def write_csv(path, rows):
     with open(path, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w = csv.DictWriter(f, fieldnames=list(rows[0]), lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
