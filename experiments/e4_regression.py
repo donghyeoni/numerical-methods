@@ -112,8 +112,6 @@ def main():
     fig.tight_layout()
     fig.savefig(os.path.join(out, "r2.png"), dpi=150)
     plt.close(fig)
-    with open(os.path.join(out, "tables.md"), encoding="utf-8") as fh:
-        print(fh.read())
 
 
 if __name__ == "__main__":

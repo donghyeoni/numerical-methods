@@ -1,21 +1,23 @@
 # Experiment Log
 
-Every run of the project: the plan, the setting, the full result tables and
-the observations. The [README](../README.md) summarises the results; all of
-its numbers appear here. The four experiments are independent of each other.
+The plan, the settings, the full result tables and the observations of the
+four experiments, which are independent of each other. The
+[README](../README.md) summarises the results; every result value in it
+appears in the tables below.
 
 ## Conventions
 
 - **Errors** are in percent (Chapra & Canale):
   - true percent relative error `ε_t = |(true − approx) / true| · 100`;
   - approximate percent relative error
-    `ε_a = |(present − previous) / present| · 100`, not
-    defined for the first estimate (shown as `–`).
+    `ε_a = |(present − previous) / present| · 100`, not defined for the
+    first estimate or when the present estimate is 0 (shown as `–`).
 - **Precision.** Errors and other measured values are shown with 4
   significant digits (`format(x, "#.4g")`, for example `0.9643`, `14.94`,
   `3.575e-06`). Approximate values (polynomial values, iterates, solution
   components) are shown in full float64 precision (the shortest decimal that
-  converts back to the same float). `0` means exactly zero in float64.
+  converts back to the same float). `0` means exactly zero in float64;
+  `nan` means the computation gave NaN.
 - **Arithmetic.** float64 (NumPy) unless a section says otherwise.
 - **Result tables.** Every result table (titled with its id and file) is
   written by the script named in its section to a `tables.md` file and
@@ -261,8 +263,7 @@ values of exactly 0 or nan are not drawn.
 
 **Observations.**
 
-- `cond₂(A)` stays between 13.42 and 14.94 for all `n`: a small `δ` does not
-  make `A` ill-conditioned.
+- `cond₂(A)` stays between 13.42 and 14.94 for all `n`.
 - The inverse and pivoting solvers have `ε_t` of at most 8.218e-14% for every
   `n`.
 - Naive elimination divides by the pivot `δ`. Its `ε_t` grows from 4.049e-14%
@@ -348,6 +349,11 @@ Figures: `results/e4_regression/fits_seed0.png` (the five fits at seed 0) and
    CSV writing moved to one helper. The E2 figure's y label and the E3-b title
    now say "true percent relative error". A rerun gave the same values in
    every CSV and table.
+5. **Script output.** After the E1–E4 runs above, the scripts stopped
+   printing their tables to the console, so that a run with redirected output
+   does not fail on characters outside the console encoding; CSV files are
+   written as UTF-8; `ε_a` and the E2 ratio column are `–` when their divisor
+   is 0 (it is not 0 in any run). A rerun gave byte-identical results.
 
 **Differences between the plan and the runs** (the plan above is kept as
 written):

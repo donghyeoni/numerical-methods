@@ -48,7 +48,7 @@ def main():
         if key == "fixed-point":
             headers.append("ε_t(i) / ε_t(i−1)")
             for c, h, p in zip(cells, hist, prev):
-                c.append(s4(None if p is None else h["true_error"] / p))
+                c.append(s4(None if not p else h["true_error"] / p))
         if key == "newton":
             headers.append(f"{NEWTON_C}·ε_t(i−1)²")
             for c, p in zip(cells, prev):
@@ -73,8 +73,6 @@ def main():
     fig.tight_layout()
     fig.savefig(os.path.join(out, "errors.png"), dpi=150)
     plt.close(fig)
-    with open(os.path.join(out, "tables.md"), encoding="utf-8") as fh:
-        print(fh.read())
 
 
 if __name__ == "__main__":

@@ -6,6 +6,6 @@ def true_relative_error(true_value, approx_value):
 
 
 def approx_error(present, previous):
-    if previous is None:
+    if previous is None or present == 0:
         return None
     return float(abs((present - previous) / present) * 100)
